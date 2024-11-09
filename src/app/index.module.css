@@ -175,3 +175,43 @@
 .submitButton:hover {
   background-color: rgb(255 255 255 / 0.2);
 }
+
+.solutionContainer {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.solutionStep {
+  margin-bottom: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.solutionStep strong {
+  font-weight: bold;
+}
+
+.solutionStep em {
+  font-style: italic;
+}
+
+.capturedImage {
+  max-width: 500px;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+
+.loading {
+  color: blue;
+  margin-top: 10px;
+}
