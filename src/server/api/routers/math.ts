@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { applyOCR } from "~/server/utils/ocr";
-import { generateSolution } from "~/server/utils/openai";
+import { generateSolution } from "~/server/utils/generateSolution";
 
 export const mathRouter = createTRPCRouter({
   analyzeImage: publicProcedure

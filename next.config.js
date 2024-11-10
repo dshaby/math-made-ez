@@ -5,8 +5,6 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {
-  serverExternalPackages: ["tesseract.js"],
-};
+const config = {};
 
 export default config;
