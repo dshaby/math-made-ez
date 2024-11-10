@@ -6,15 +6,6 @@ export async function applyOCR(image: string): Promise<string> {
   let textResult = "";
 
   try {
-    const base64Image = image.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Image, "base64");
-    const uploadsDir = path.join(process.cwd(), "uploads");
-
-    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
-
-    const imagePath = path.join(uploadsDir, "uploaded_image.jpg");
-    fs.writeFileSync(imagePath, buffer);
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -43,7 +34,7 @@ export async function applyOCR(image: string): Promise<string> {
       textResult = choices[0]?.message?.content;
     }
   } catch (error) {
-    console.error("Updated Error with OCR recognizing text:", error);
+    console.error("Error with OCR recognizing text:", error);
   }
 
   return textResult;
