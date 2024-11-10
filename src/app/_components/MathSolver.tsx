@@ -60,6 +60,59 @@ export default function MathSolver() {
     setShowCamera(true);
   };
 
+  const renderSolution = (solution: string) => {
+    const lines = solution.split("\n");
+    const elements = [];
+    let mathExpression = "";
+    let inMathBlock = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line?.includes("### ")) {
+        elements.push(
+          <h3 key={i} className={styles.solutionHeader}>
+            {line.replace("### ", "")}
+          </h3>
+        );
+      } else if (line?.includes("#### ")) {
+        elements.push(
+          <h4 key={i} className={styles.solutionSubheader}>
+            {line.replace("#### ", "")}
+          </h4>
+        );
+      } else if (line?.startsWith("**") && line.endsWith("**")) {
+        elements.push(
+          <p key={i} className={styles.solutionBold}>
+            {line.replace(/\*\*/g, "")}
+          </p>
+        );
+      } else if (line?.includes("\\[") || line?.includes("\\(")) {
+        inMathBlock = true;
+        mathExpression += line;
+      } else if (inMathBlock) {
+        mathExpression += line;
+        if (line?.includes("\\]") || line?.includes("\\)")) {
+          elements.push(
+            <MathJax key={i} className={styles.solutionMath}>
+              {mathExpression}
+            </MathJax>
+          );
+          mathExpression = "";
+          inMathBlock = false;
+        }
+      } else {
+        elements.push(
+          <p key={i} className={styles.solutionLine}>
+            {line}
+          </p>
+        );
+      }
+    }
+
+    return <div className={styles.solutionContainer}>{elements}</div>;
+  };
+
   return (
     <div>
       {initialState && (
@@ -99,11 +152,7 @@ export default function MathSolver() {
               </div>
             )}
 
-            {solution && (
-              <div className={styles.solutionContainer}>
-                {<MathJax>{solution}</MathJax>}
-              </div>
-            )}
+            {solution && renderSolution(solution)}
           </MathJaxContext>
           <button
             disabled={isSolutionLoading}

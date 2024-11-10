@@ -9,6 +9,7 @@ export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
     OPENAI_API_KEY: z.string(),
+    WOLFRAM_APP_ID: z.string(),
   },
 
   /**
@@ -27,6 +28,7 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    WOLFRAM_APP_ID: process.env.WOLFRAM_APP_ID,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

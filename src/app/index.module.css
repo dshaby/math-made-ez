@@ -184,6 +184,42 @@
   background-color: #f9f9f9;
 }
 
+.solutionSection {
+  margin-bottom: 20px;
+}
+
+.solutionLine {
+  margin-bottom: 5px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.solutionPre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: monospace;
+}
+
+.solutionHeader {
+  font-size: 1.5em;
+  margin-top: 20px;
+}
+
+.solutionSubheader {
+  font-size: 1.2em;
+  margin-top: 15px;
+}
+
+.solutionBold {
+  font-weight: bold;
+}
+
+.solutionMath {
+  margin-bottom: 5px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
 .solutionStep {
   margin-bottom: 10px;
   font-size: 16px;

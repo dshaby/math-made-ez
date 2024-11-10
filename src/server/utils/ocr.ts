@@ -10,7 +10,7 @@ export async function applyOCR(image: string): Promise<string> {
         {
           role: "system",
           content:
-            "I will provide an image of a math problem. Please analyze the image, identify any mathematical information, including operators, fractions, exponents, and text labels if any, and convert the entire problem accurately into readable text format or as LaTeX if the format is complex. Ensure all symbols, equations, and formatting are preserved as closely as possible to the original.",
+            "I will provide an image of a math problem. Please analyze the image, identify any mathematical information, including operators, fractions, exponents, and text labels if any, and convert the entire problem into a text format of one-line that makes it easy for the Wolfram Alpha API to injest and understand. Avoid using any special characters or symbols that may not be recognized by the API.",
         },
         {
           role: "user",
