@@ -8,7 +8,7 @@ export async function generateSolution(mathProblems: string): Promise<string> {
         {
           role: "system",
           content:
-            "Using the following math problem, solve it step-by-step. Provide a solution formatted in LaTeX, including all steps with mathematical symbols and equations represented in LaTeX syntax.",
+            "Provide a detailed step-by-step solution to the provided math problem. For each step, use Markdown formatting with LaTeX syntax that will be compatible with MathJax rendering. Use (...) for inline math expressions. Use [...] for block equations. Begin each major step with a heading like ### Step 1: [Description] and format calculations or equations in LaTeX where appropriate. Ensure all mathematical symbols and equations are fully enclosed in delimiters so that they will be compatible with MathJax",
         },
         {
           role: "user",

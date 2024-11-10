@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import Webcam from "react-webcam";
+import { MathJax, MathJaxContext } from "better-react-mathjax";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import styles from "../index.module.css";
@@ -25,6 +26,7 @@ export default function MathSolver() {
       if (imageSrc) {
         setImage(imageSrc);
         setShowCamera(false);
+        setMathProblem("");
       }
     }
   }, [webcamRef]);
@@ -58,16 +60,6 @@ export default function MathSolver() {
     setShowCamera(true);
   };
 
-  const renderSolution = (solution: string) => {
-    const steps = solution.split("\n").map((step, index) => (
-      <p key={index} className={styles.solutionStep}>
-        {step}
-      </p>
-    ));
-
-    return <div className={styles.solutionContainer}>{steps}</div>;
-  };
-
   return (
     <div>
       {initialState && (
@@ -99,14 +91,20 @@ export default function MathSolver() {
             className={styles.capturedImage}
           />
 
-          {mathProblem && (
-            <div className={styles.mathProblem}>
-              <h3>Math Problem:</h3>
-              <p>{mathProblem}</p>
-            </div>
-          )}
+          <MathJaxContext>
+            {mathProblem && (
+              <div className={styles.mathProblem}>
+                <h3>Math Problem:</h3>
+                <MathJax>{mathProblem}</MathJax>
+              </div>
+            )}
 
-          {solution && renderSolution(solution)}
+            {solution && (
+              <div className={styles.solutionContainer}>
+                {<MathJax>{solution}</MathJax>}
+              </div>
+            )}
+          </MathJaxContext>
           <button
             disabled={isSolutionLoading}
             onClick={solution ? handleTakeNewPhoto : handleSubmit}
