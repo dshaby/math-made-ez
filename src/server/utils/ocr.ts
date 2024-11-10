@@ -1,6 +1,4 @@
 import { openai } from "./openAISetup";
-import fs from "fs";
-import path from "path";
 
 export async function applyOCR(image: string): Promise<string> {
   let textResult = "";
