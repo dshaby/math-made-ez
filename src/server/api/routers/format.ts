@@ -5,8 +5,9 @@ import { formatSolution } from "~/server/utils/formatSolution";
 export const formatSolutionRouter = createTRPCRouter({
   formatSolution: publicProcedure
     .input(z.object({ solution: z.string() }))
-    .mutation(async ({ input }) => {
-      const formattedSolution = await formatSolution(input.solution);
-      return { formattedSolution };
+    .query(async function* ({ input }) {
+      for await (const chunk of formatSolution(input.solution)) {
+        yield { formattedSolution: chunk };
+      }
     }),
 });
