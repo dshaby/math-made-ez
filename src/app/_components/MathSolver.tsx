@@ -15,7 +15,7 @@ export default function MathSolver() {
   const [image, setImage] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [mathProblem, setMathProblem] = useState<string>("");
-  const [solution, setSolution] = useState<string | null>(null);
+  const [solution, setSolution] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSolutionLoading, setIsSolutionLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -25,7 +25,11 @@ export default function MathSolver() {
   const initialState = !showCamera && !image && !solution;
   const applyOCR = api.ocr.applyOCR.useMutation();
   const generateSolution = api.solve.solveRouter.useMutation();
-  const formatSolution = api.format.formatSolution.useMutation();
+  // const formatSolution = api.format.formatSolution.useMutation();
+  const formatSolution = api.format.formatSolution.useQuery(
+    { solution },
+    { enabled: false }
+  );
 
   const capture = useCallback(() => {
     if (webcamRef.current) {
@@ -43,6 +47,16 @@ export default function MathSolver() {
     setIsMobile(isMobileDevice());
   }, []);
 
+  useEffect(() => {
+    if (formatSolution.data) {
+      for (const chunk of formatSolution.data) {
+        setSolution(
+          (prevSolution) => (prevSolution || "") + chunk.formattedSolution
+        );
+      }
+    }
+  }, [formatSolution.data]);
+
   const handleSubmit = async () => {
     if (!image) {
       setError("No image to submit");
@@ -57,11 +71,18 @@ export default function MathSolver() {
       setMathProblem(mathProblems);
 
       const { solution } = await generateSolution.mutateAsync({ mathProblems });
-      const { formattedSolution } = await formatSolution.mutateAsync({
-        solution,
-      });
 
-      setSolution(formattedSolution);
+      if (solution) {
+        setSolution(solution);
+
+        const intervalId = setInterval(async () => {
+          await formatSolution.refetch();
+          if (formatSolution.isSuccess && formatSolution.data.length === 0) {
+            clearInterval(intervalId);
+          }
+        }, 2000);
+      }
+
       setError(null);
     } catch (error) {
       console.error("Error submitting image:", error);
@@ -73,7 +94,7 @@ export default function MathSolver() {
 
   const handleTakeNewPhoto = () => {
     setImage(null);
-    setSolution(null);
+    setSolution("");
     setShowCamera(true);
   };
 
