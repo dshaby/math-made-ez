@@ -160,6 +160,13 @@ export default function MathSolver() {
             )}
 
             {solution && renderSolution(solution)}
+
+            {solution?.length && (
+              <div>
+                <h3>Original, unformatted solution:</h3>
+                <p>{solution}</p>
+              </div>
+            )}
           </MathJaxContext>
           <button
             disabled={isSolutionLoading}
