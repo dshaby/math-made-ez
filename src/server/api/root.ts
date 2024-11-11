@@ -1,5 +1,7 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import { mathRouter } from "./routers/math";
+import { applyOCRRouter } from "./routers/ocr";
+import { solveRouter } from "./routers/solve";
+import { formatSolutionRouter } from "./routers/format";
 
 /**
  * This is the primary router for your server.
@@ -7,7 +9,9 @@ import { mathRouter } from "./routers/math";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  math: mathRouter,
+  ocr: applyOCRRouter,
+  solve: solveRouter,
+  format: formatSolutionRouter,
 });
 
 // export type definition of API

@@ -17,7 +17,9 @@ export default function MathSolver() {
   const webcamRef = useRef<Webcam>(null);
 
   const initialState = !showCamera && !image && !solution;
-  const analyzeImage = api.math.analyzeImage.useMutation();
+  const applyOCR = api.ocr.applyOCR.useMutation();
+  const generateSolution = api.solve.solveRouter.useMutation();
+  const formatSolution = api.format.formatSolution.useMutation();
 
   const capture = useCallback(() => {
     if (webcamRef.current) {
@@ -41,10 +43,15 @@ export default function MathSolver() {
     setError(null);
 
     try {
-      const { mathProblems, solution: solutionSteps } =
-        await analyzeImage.mutateAsync({ image });
+      const { mathProblems } = await applyOCR.mutateAsync({ image });
       setMathProblem(mathProblems);
-      setSolution(solutionSteps);
+
+      const { solution } = await generateSolution.mutateAsync({ mathProblems });
+      const { formattedSolution } = await formatSolution.mutateAsync({
+        solution,
+      });
+
+      setSolution(formattedSolution);
       setError(null);
     } catch (error) {
       console.error("Error submitting image:", error);
