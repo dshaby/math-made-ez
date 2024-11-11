@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Webcam from "react-webcam";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import styles from "../index.module.css";
+
+const isMobileDevice = () => {
+  return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+};
 
 export default function MathSolver() {
   const [image, setImage] = useState<string | null>(null);
@@ -14,6 +18,8 @@ export default function MathSolver() {
   const [solution, setSolution] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSolutionLoading, setIsSolutionLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const webcamRef = useRef<Webcam>(null);
 
   const initialState = !showCamera && !image && !solution;
@@ -32,6 +38,10 @@ export default function MathSolver() {
       }
     }
   }, [webcamRef]);
+
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
 
   const handleSubmit = async () => {
     if (!image) {
@@ -65,6 +75,10 @@ export default function MathSolver() {
     setImage(null);
     setSolution(null);
     setShowCamera(true);
+  };
+
+  const toggleCameraFacingMode = () => {
+    setFacingMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
   };
 
   const renderSolution = (solution: string) => {
@@ -133,9 +147,17 @@ export default function MathSolver() {
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             width="60%"
+            videoConstraints={{
+              facingMode,
+            }}
           />
           <div>
             <button onClick={capture}>Take Picture</button>
+            {isMobile && (
+              <button onClick={toggleCameraFacingMode}>
+                Switch to {facingMode === "user" ? "Back" : "Front"} Camera
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -163,7 +185,7 @@ export default function MathSolver() {
 
             {solution?.length && (
               <div>
-                <h3>Original, unformatted solution:</h3>
+                <h3>Solution without React/UI formatting:</h3>
                 <p>{solution}</p>
               </div>
             )}
