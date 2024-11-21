@@ -3,8 +3,7 @@ import { openai } from "./openAISetup";
 export async function formatSolution(
   wolframAlphaOutput: string
 ): Promise<string> {
-  console.log("wolframAlphaOutput:", wolframAlphaOutput);
-  const prompt = `Considering this solution to a math problem, format the solution in a way that is easy for a student to understand.`;
+  const prompt = `Reformat the following solution to a math problem into a step-by-step explanation suitable for students. Output the solution as a JSON array where each element is an object with a "type" (e.g., "paragraph", "heading", "math") and a "content" field. Enclose all mathematical expressions in the "math" type with LaTeX code. **Do not include any additional text outside of the JSON array. Do not include any code block fences or Markdown formatting in your output.**`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -21,13 +20,9 @@ export async function formatSolution(
       ],
     });
 
-    const { choices } = completion;
+    const result = completion.choices[0]?.message?.content;
 
-    if (choices[0]?.message?.content) {
-      return choices[0]?.message?.content;
-    } else {
-      throw new Error("No content found in completion");
-    }
+    return result ? result : "";
   } catch (error) {
     console.error("Error formatting problem:", error);
     throw new Error("Failed to format problem");

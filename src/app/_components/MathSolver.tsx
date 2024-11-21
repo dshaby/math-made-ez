@@ -6,6 +6,8 @@ import { MathJax, MathJaxContext } from "better-react-mathjax";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import styles from "../index.module.css";
+import Solution from "./Solution";
+import FileUpload from "./FileUpload";
 
 const isMobileDevice = () => {
   return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -20,6 +22,7 @@ export default function MathSolver() {
   const [isSolutionLoading, setIsSolutionLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const webcamRef = useRef<Webcam>(null);
 
   const initialState = !showCamera && !image && !solution;
@@ -39,9 +42,17 @@ export default function MathSolver() {
     }
   }, [webcamRef]);
 
-  useEffect(() => {
-    setIsMobile(isMobileDevice());
-  }, []);
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!image) {
@@ -54,7 +65,7 @@ export default function MathSolver() {
 
     try {
       const { mathProblems } = await applyOCR.mutateAsync({ image });
-      setMathProblem(mathProblems);
+      setMathProblem(`\\[${decodeURIComponent(mathProblems)}\\]`);
 
       const { solution } = await generateSolution.mutateAsync({ mathProblems });
       const { formattedSolution } = await formatSolution.mutateAsync({
@@ -71,68 +82,23 @@ export default function MathSolver() {
     }
   };
 
-  const handleTakeNewPhoto = () => {
+  const handleRestart = () => {
     setImage(null);
     setSolution(null);
-    setShowCamera(true);
+    setMathProblem("");
+    setError(null);
+    setShowCamera(false);
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const toggleCameraFacingMode = () => {
     setFacingMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
   };
 
-  const renderSolution = (solution: string) => {
-    const lines = solution.split("\n");
-    const elements = [];
-    let mathExpression = "";
-    let inMathBlock = false;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-
-      if (line?.includes("### ")) {
-        elements.push(
-          <h3 key={i} className={styles.solutionHeader}>
-            {line.replace("### ", "")}
-          </h3>
-        );
-      } else if (line?.includes("#### ")) {
-        elements.push(
-          <h4 key={i} className={styles.solutionSubheader}>
-            {line.replace("#### ", "")}
-          </h4>
-        );
-      } else if (line?.startsWith("**") && line.endsWith("**")) {
-        elements.push(
-          <p key={i} className={styles.solutionBold}>
-            {line.replace(/\*\*/g, "")}
-          </p>
-        );
-      } else if (line?.includes("\\[") || line?.includes("\\(")) {
-        inMathBlock = true;
-        mathExpression += line;
-      } else if (inMathBlock) {
-        mathExpression += line;
-        if (line?.includes("\\]") || line?.includes("\\)")) {
-          elements.push(
-            <MathJax key={i} className={styles.solutionMath}>
-              {mathExpression}
-            </MathJax>
-          );
-          mathExpression = "";
-          inMathBlock = false;
-        }
-      } else {
-        elements.push(
-          <p key={i} className={styles.solutionLine}>
-            {line}
-          </p>
-        );
-      }
-    }
-
-    return <div className={styles.solutionContainer}>{elements}</div>;
-  };
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
 
   return (
     <div>
@@ -162,6 +128,13 @@ export default function MathSolver() {
         </div>
       )}
 
+      {!isMobile && !solution && !image && (
+        <FileUpload
+          fileInputRef={fileInputRef}
+          handleUpload={handleFileUpload}
+        />
+      )}
+
       {image && (
         <div>
           <Image
@@ -181,22 +154,18 @@ export default function MathSolver() {
               </div>
             )}
 
-            {solution && renderSolution(solution)}
-
-            {solution?.length && (
-              <div>
-                <h3>Solution without React/UI formatting:</h3>
-                <p>{solution}</p>
-              </div>
-            )}
+            {solution && <Solution solution={solution} />}
           </MathJaxContext>
-          <button
-            disabled={isSolutionLoading}
-            onClick={solution ? handleTakeNewPhoto : handleSubmit}
-          >
-            {solution ? "Take New Photo" : "Solve"}
+
+          {!solution && (
+            <button disabled={isSolutionLoading} onClick={handleSubmit}>
+              Solve
+            </button>
+          )}
+
+          <button disabled={isSolutionLoading} onClick={handleRestart}>
+            Restart
           </button>
-          <button onClick={handleTakeNewPhoto}>Retake Photo</button>
         </div>
       )}
 
