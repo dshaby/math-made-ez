@@ -1,18 +1,26 @@
-interface FileUploadProps {
+import Button from "./Button";
+
+interface Props {
   fileInputRef: React.RefObject<HTMLInputElement>;
-  handleUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const FileUpload = ({ fileInputRef, handleUpload }: FileUploadProps) => {
+const FileUpload = ({ fileInputRef, handleUpload }: Props) => {
   return (
-    <div>
+    <Button
+      variant="secondary"
+      onClick={() => fileInputRef.current?.click()}
+      className="w-full sm:w-auto"
+    >
+      Upload Image
       <input
-        type="file"
         accept="image/*"
+        type="file"
         ref={fileInputRef}
         onChange={handleUpload}
+        className="hidden"
       />
-    </div>
+    </Button>
   );
 };
 

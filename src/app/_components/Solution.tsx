@@ -1,5 +1,4 @@
 import { MathJax, MathJaxContext } from "better-react-mathjax";
-import styles from "../index.module.css";
 
 interface FormattedSolution {
   type: string;
@@ -28,12 +27,12 @@ export default function Solution({ solution }: { solution: string }) {
   const elements = parseFormattedSolution(solution);
 
   return (
-    <div className={styles.solutionContainer}>
+    <div className="p-6 bg-white rounded-xl shadow-2xl border border-gray-300">
       <MathJaxContext>
         {elements.map((element, index: number) => {
           if (element.type === "paragraph") {
             return (
-              <p key={index}>
+              <p key={index} className="mb-4 text-gray-800">
                 <MathJax inline dynamic>
                   {element.content}
                 </MathJax>
@@ -41,14 +40,19 @@ export default function Solution({ solution }: { solution: string }) {
             );
           } else if (element.type === "heading") {
             return (
-              <h3 key={index}>
+              <h3 key={index} className="text-xl font-bold mb-2">
                 <MathJax inline dynamic>
                   {element.content}
                 </MathJax>
               </h3>
             );
           } else if (element.type === "math") {
-            return <MathJax key={index}>{`\\[${element.content}\\]`}</MathJax>;
+            return (
+              <MathJax
+                key={index}
+                className="my-4 text-center"
+              >{`\\[${element.content}\\]`}</MathJax>
+            );
           } else {
             return null;
           }

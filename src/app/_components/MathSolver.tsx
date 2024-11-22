@@ -5,9 +5,9 @@ import Webcam from "react-webcam";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import Image from "next/image";
 import { api } from "~/trpc/react";
-import styles from "../index.module.css";
 import Solution from "./Solution";
 import FileUpload from "./FileUpload";
+import Button from "./Button";
 
 const isMobileDevice = () => {
   return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -43,6 +43,7 @@ export default function MathSolver() {
   }, [webcamRef]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setShowCamera(false);
     const file = event.target.files?.[0];
 
     if (file) {
@@ -101,76 +102,142 @@ export default function MathSolver() {
   }, []);
 
   return (
-    <div>
+    <div className="flex flex-col items-center p-6">
       {initialState && (
-        <button onClick={() => setShowCamera(true)}>Open Camera</button>
-      )}
+        <div className="flex flex-col items-center">
+          <figure className="w-full max-w-md">
+            <Image
+              alt="image description"
+              className="h-auto w-auto max-w-full rounded-lg"
+              height={300}
+              priority
+              src="https://flowbite.com/docs/images/examples/image-3@2x.jpg"
+              width={500}
+            />
+          </figure>
+          <div className="mt-4 flex space-x-4">
+            <Button
+              variant="primary"
+              onClick={() => setShowCamera(true)}
+              className="w-full sm:w-auto"
+            >
+              Open Camera
+            </Button>
 
-      {showCamera && (
-        <div>
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            width="60%"
-            videoConstraints={{
-              facingMode,
-            }}
-          />
-          <div>
-            <button onClick={capture}>Take Picture</button>
-            {isMobile && (
-              <button onClick={toggleCameraFacingMode}>
-                Switch to {facingMode === "user" ? "Back" : "Front"} Camera
-              </button>
+            {!isMobile && (
+              <FileUpload
+                fileInputRef={fileInputRef}
+                handleUpload={handleFileUpload}
+              />
             )}
           </div>
         </div>
       )}
 
-      {!isMobile && !solution && !image && (
-        <FileUpload
-          fileInputRef={fileInputRef}
-          handleUpload={handleFileUpload}
-        />
-      )}
+      {showCamera && (
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-md">
+            <Webcam
+              audio={false}
+              className="rounded-lg"
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              videoConstraints={{
+                facingMode,
+              }}
+            />
+          </div>
 
-      {image && (
-        <div>
-          <Image
-            src={image}
-            alt="Captured"
-            layout="responsive"
-            width={300}
-            height={300}
-            className={styles.capturedImage}
-          />
-
-          <MathJaxContext>
-            {mathProblem && (
-              <div className={styles.mathProblem}>
-                <h3>Math Problem:</h3>
-                <MathJax>{mathProblem}</MathJax>
-              </div>
+          <div className="mt-4 flex flex-col space-y-5 sm:flex-row sm:space-x-4 sm:space-y-0">
+            <Button
+              variant="success"
+              onClick={capture}
+              className="w-full sm:w-auto"
+            >
+              Take Picture
+            </Button>
+            {isMobile && (
+              <Button
+                variant="secondary"
+                onClick={toggleCameraFacingMode}
+                className="w-full sm:w-auto"
+              >
+                Switch to {facingMode === "user" ? "Back" : "Front"} Camera
+              </Button>
             )}
-
-            {solution && <Solution solution={solution} />}
-          </MathJaxContext>
-
-          {!solution && (
-            <button disabled={isSolutionLoading} onClick={handleSubmit}>
-              Solve
-            </button>
-          )}
-
-          <button disabled={isSolutionLoading} onClick={handleRestart}>
-            Restart
-          </button>
+            <Button
+              variant="danger"
+              onClick={handleRestart}
+              className="w-full sm:w-auto"
+              disabled={isSolutionLoading}
+            >
+              Restart
+            </Button>
+          </div>
         </div>
       )}
 
-      {isSolutionLoading && <p className={styles.loading}>Loading...</p>}
-      {error && <p className={styles.error}>{error}</p>}
+      {image && (
+        <div className="mt-6 flex w-full flex-col items-center">
+          <div className="w-full max-w-md">
+            <Image
+              src={image}
+              alt="Captured"
+              className="w-full rounded-lg shadow-xl"
+              width={500}
+              height={500}
+            />
+          </div>
+
+          <div className="mt-4 flex flex-col space-y-5 sm:flex-row sm:space-x-6 sm:space-y-0">
+            {!solution && (
+              <Button
+                variant="primary"
+                className="w-full sm:w-auto"
+                disabled={isSolutionLoading}
+                onClick={handleSubmit}
+              >
+                Solve
+              </Button>
+            )}
+
+            <Button
+              variant="danger"
+              className="w-full sm:w-auto"
+              disabled={isSolutionLoading}
+              onClick={handleRestart}
+            >
+              Restart
+            </Button>
+          </div>
+
+          <MathJaxContext>
+            {mathProblem && (
+              <div className="mt-6 w-full max-w-md overflow-x-auto overflow-y-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md">
+                <h3 className="mb-2 text-xl font-semibold">Math Problem:</h3>
+                <MathJax className="break-words text-base">
+                  {mathProblem}
+                </MathJax>
+              </div>
+            )}
+
+            {solution && (
+              <div className="mt-4 w-full max-w-4xl overflow-x-auto">
+                <Solution solution={solution} />
+              </div>
+            )}
+          </MathJaxContext>
+        </div>
+      )}
+
+      {isSolutionLoading && (
+        <p className="mt-4 text-lg font-semibold text-blue-500">Loading...</p>
+      )}
+      {error && (
+        <p className="mt-4 overflow-x-auto text-lg font-semibold text-red-500">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
