@@ -2,12 +2,15 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Webcam from "react-webcam";
-import { MathJax, MathJaxContext } from "better-react-mathjax";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import Solution from "./Solution";
 import FileUpload from "./FileUpload";
 import Button from "./Button";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import { cleanSolution } from "../utils/cleanSolution";
 
 const isMobileDevice = () => {
   return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -66,14 +69,14 @@ export default function MathSolver() {
 
     try {
       const { mathProblems } = await applyOCR.mutateAsync({ image });
-      setMathProblem(`\\[${decodeURIComponent(mathProblems)}\\]`);
+      setMathProblem(decodeURIComponent(mathProblems));
 
       const { solution } = await generateSolution.mutateAsync({ mathProblems });
       const { formattedSolution } = await formatSolution.mutateAsync({
         solution,
       });
 
-      setSolution(formattedSolution);
+      setSolution(cleanSolution(formattedSolution));
       setError(null);
     } catch (error) {
       console.error("Error submitting image:", error);
@@ -211,22 +214,21 @@ export default function MathSolver() {
             </Button>
           </div>
 
-          <MathJaxContext>
-            {mathProblem && (
-              <div className="mt-6 w-full max-w-md overflow-x-auto overflow-y-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md">
-                <h3 className="mb-2 text-xl font-semibold">Math Problem:</h3>
-                <MathJax className="break-words text-base">
-                  {mathProblem}
-                </MathJax>
-              </div>
-            )}
+          {mathProblem && (
+            <div className="mt-6 w-full max-w-md overflow-x-auto overflow-y-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md">
+              <h3 className="mb-2 text-xl font-semibold">Math Problem:</h3>
+              <ReactMarkdown
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+              >{`$$${mathProblem}$$`}</ReactMarkdown>
+            </div>
+          )}
 
-            {solution && (
-              <div className="mt-4 w-full max-w-4xl overflow-x-auto">
-                <Solution solution={solution} />
-              </div>
-            )}
-          </MathJaxContext>
+          {solution && (
+            <div className="mt-4 w-full max-w-4xl overflow-x-auto">
+              <Solution solution={solution} />
+            </div>
+          )}
         </div>
       )}
 

@@ -1,10 +1,15 @@
 import { openai } from "./openAISetup";
 
-export async function formatSolution(
-  wolframAlphaOutput: string
-): Promise<string> {
-  const prompt = `Reformat the following solution to a math problem into a step-by-step explanation suitable for students. Output the solution as a JSON array where each element is an object with a "type" (e.g., "paragraph", "heading", "math") and a "content" field. Enclose all mathematical expressions in the "math" type with LaTeX code. **Do not include any additional text outside of the JSON array. Do not include any code block fences or Markdown formatting in your output.**`;
+const prompt = `Reformat the following solution to a math problem into a clear, step-by-step explanation suitable for students.
 
+  - Output the solution in **Markdown format**.
+  - Use appropriate headings, lists, and ensure all mathematical expressions are properly enclosed in LaTeX delimiters.
+  - **Ensure that all mathematical expressions use \`$...$\` for inline math and \`$$...$$\` for display math. Do not use \\\\( ... \\\\) or \\\\[ ... \\\\] delimiters or any other delimiters.**
+  - **Do not include any code block fences or backticks (e.g., \`\`\`, \`\`\`markdown).**
+  - **Only output the Markdown content.**
+  - Do not include any additional text outside of the solution.`;
+
+export async function formatSolution(wolframAlphaOutput: string): Promise<string> {
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
