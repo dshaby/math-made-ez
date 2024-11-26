@@ -23,19 +23,27 @@ export async function generateSolution(
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       const errMessage = error.response?.data as string;
-      const regex = /You could instead try:\s*(.+)/;
+      const regex =
+        /(You could instead try:|Things to try instead:)\s*([\s\S]+)/;
       const errResponseArray = regex.exec(errMessage);
 
-      if (errResponseArray?.[1]) {
-        const suggestedProblem = errResponseArray[1].trim();
-        console.log(`Retrying with suggested problem: ${suggestedProblem}`);
+      if (errResponseArray?.[2]) {
+        const suggestedProblems = errResponseArray[2]
+          .split("\n")
+          .map((s) => s.trim())
+          .filter((s) => s);
+        const firstSuggestedProblem = suggestedProblems[0];
+        console.log(
+          `Retrying with suggested problem: ${firstSuggestedProblem}`,
+        );
 
-        return await generateSolution(suggestedProblem, retryCount + 1);
+        if (firstSuggestedProblem)
+          return await generateSolution(firstSuggestedProblem, retryCount + 1);
       }
     }
 
     throw new Error(
-      `Could not properly generate a solution with this mathProblem: ${decodeURIComponent(urlEncodedProblem)}. Error: ${JSON.stringify(error)}`,
+      `Could not generate a solution for the problem: ${decodeURIComponent(urlEncodedProblem)}.\nStatus: ${axios.isAxiosError(error) ? error.response?.status : "unknown"}.\n Response data: ${axios.isAxiosError(error) ? JSON.stringify(error.response?.data) : "unknown"}`,
     );
   }
 }

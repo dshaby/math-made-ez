@@ -74,7 +74,6 @@ export default function MathSolver() {
       });
 
       setSolution(cleanSolution(formattedSolution));
-      setError(null);
     } catch (error) {
       console.error(error);
       setError(
