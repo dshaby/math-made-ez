@@ -59,10 +59,7 @@ export default function MathSolver() {
   };
 
   const handleSubmit = async () => {
-    if (!image) {
-      setError("No image to submit");
-      return;
-    }
+    if (!image) return;
 
     setIsSolutionLoading(true);
     setError(null);
@@ -79,8 +76,10 @@ export default function MathSolver() {
       setSolution(cleanSolution(formattedSolution));
       setError(null);
     } catch (error) {
-      console.error("Error submitting image:", error);
-      setError(JSON.stringify(error));
+      console.error(error);
+      setError(
+        "Error solving math problem. Please try again by clicking `Restart`.",
+      );
     } finally {
       setIsSolutionLoading(false);
     }
