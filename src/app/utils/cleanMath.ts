@@ -26,3 +26,7 @@ export const cleanSolution = (formattedSolution: string): string => {
 
   return cleanedSolution;
 };
+
+export const removeDelimiters = (expression: string): string => {
+  return expression.replace(/(\$\$|\$|\\\[|\\\]|\\\(|\\\))/g, "").trim();
+};

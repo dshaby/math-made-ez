@@ -10,7 +10,7 @@ import Button from "./Button";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { cleanSolution } from "../utils/cleanSolution";
+import { cleanSolution, removeDelimiters } from "../utils/cleanMath";
 
 const isMobileDevice = () => {
   return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -58,6 +58,23 @@ export default function MathSolver() {
     }
   };
 
+  const getSolution = async (mathProblems: string) => {
+    const { solution } = await generateSolution.mutateAsync({
+      mathProblems,
+    });
+    const { formattedSolution } = await formatSolution.mutateAsync({
+      solution,
+    });
+    setSolution(cleanSolution(formattedSolution));
+  };
+
+  const getMathProblem = async (image: string) => {
+    const { mathProblems } = await applyOCR.mutateAsync({ image });
+    const cleanProblem = removeDelimiters(mathProblems);
+    setMathProblem(cleanProblem);
+    return cleanProblem;
+  };
+
   const handleSubmit = async () => {
     if (!image) return;
 
@@ -65,15 +82,8 @@ export default function MathSolver() {
     setError(null);
 
     try {
-      const { mathProblems } = await applyOCR.mutateAsync({ image });
-      setMathProblem(decodeURIComponent(mathProblems));
-
-      const { solution } = await generateSolution.mutateAsync({ mathProblems });
-      const { formattedSolution } = await formatSolution.mutateAsync({
-        solution,
-      });
-
-      setSolution(cleanSolution(formattedSolution));
+      const mathProblem = await getMathProblem(image);
+      await getSolution(mathProblem);
     } catch (error) {
       console.error(error);
       setError(
@@ -218,7 +228,9 @@ export default function MathSolver() {
               <ReactMarkdown
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[rehypeKatex]}
-              >{`$$${mathProblem}$$`}</ReactMarkdown>
+              >
+                {mathProblem}
+              </ReactMarkdown>
             </div>
           )}
 

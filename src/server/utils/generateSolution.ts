@@ -1,22 +1,25 @@
 import axios from "axios";
 
 export async function generateSolution(
-  urlEncodedProblem: string,
+  mathProblem: string,
   retryCount = 0,
 ): Promise<string> {
   const MAX_RETRIES = 2;
 
   if (retryCount > MAX_RETRIES) {
-    throw new Error(
-      `Maximum retries exceeded for problem: ${decodeURIComponent(
-        urlEncodedProblem,
-      )}`,
-    );
+    throw new Error(`Maximum retries exceeded for problem: ${mathProblem}`);
   }
 
   try {
     const response = await axios.get(
-      `https://www.wolframalpha.com/api/v1/llm-api?input=${urlEncodedProblem}&output=json&appid=${process.env.WOLFRAM_APP_ID}`,
+      `https://www.wolframalpha.com/api/v1/llm-api`,
+      {
+        params: {
+          input: mathProblem,
+          output: "json",
+          appid: process.env.WOLFRAM_APP_ID,
+        },
+      },
     );
 
     return response.data ? JSON.stringify(response.data) : "";
@@ -43,7 +46,7 @@ export async function generateSolution(
     }
 
     throw new Error(
-      `Could not generate a solution for the problem: ${decodeURIComponent(urlEncodedProblem)}.\nStatus: ${axios.isAxiosError(error) ? error.response?.status : "unknown"}.\n Response data: ${axios.isAxiosError(error) ? JSON.stringify(error.response?.data) : "unknown"}`,
+      `Could not generate a solution for the problem: ${mathProblem}.\nStatus: ${axios.isAxiosError(error) ? error.response?.status : "unknown"}.\n Response data: ${axios.isAxiosError(error) ? JSON.stringify(error.response?.data) : "unknown"}`,
     );
   }
 }
