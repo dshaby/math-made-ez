@@ -30,3 +30,22 @@ export const cleanSolution = (formattedSolution: string): string => {
 export const removeDelimiters = (expression: string): string => {
   return expression.replace(/(\$\$|\$|\\\[|\\\]|\\\(|\\\))/g, "").trim();
 };
+
+export const prepareMathProblemForRendering = (mathProblem: string): string => {
+  return mathProblem
+    .split("\n")
+    .map((line) => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return "";
+
+      const containsBackslashes = trimmedLine.includes("\\");
+      const containsMathSymbols = /[=+\-*/^<>]/.test(trimmedLine);
+
+      if (containsBackslashes || containsMathSymbols) {
+        return `$$${trimmedLine}$$`;
+      } else {
+        return trimmedLine;
+      }
+    })
+    .join("\n\n");
+};

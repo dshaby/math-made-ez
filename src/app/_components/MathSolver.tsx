@@ -10,7 +10,11 @@ import Button from "./Button";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { cleanSolution, removeDelimiters } from "../utils/cleanMath";
+import {
+  cleanSolution,
+  prepareMathProblemForRendering,
+  removeDelimiters,
+} from "../utils/cleanMath";
 
 const isMobileDevice = () => {
   return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -71,7 +75,7 @@ export default function MathSolver() {
   const getMathProblem = async (image: string) => {
     const { mathProblems } = await applyOCR.mutateAsync({ image });
     const cleanProblem = removeDelimiters(mathProblems);
-    setMathProblem(cleanProblem);
+    setMathProblem(prepareMathProblemForRendering(cleanProblem));
     return cleanProblem;
   };
 
