@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useReducer, useRef, useCallback, useEffect } from "react";
 import Webcam from "react-webcam";
 import Image from "next/image";
 import { api } from "~/trpc/react";
@@ -15,24 +14,27 @@ import {
   prepareMathProblemForRendering,
   removeDelimiters,
 } from "../utils/cleanMath";
-
-const isMobileDevice = () => {
-  return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-};
+import SelectSampleProblem from "./SelectSampleProblem";
+import { isMobileDevice } from "../utils/device";
+import {
+  mathSolverInitialState,
+  mathSolverReducer,
+} from "../reducers/mathSolver";
 
 export default function MathSolver() {
-  const [image, setImage] = useState<string | null>(null);
-  const [showCamera, setShowCamera] = useState(false);
-  const [mathProblem, setMathProblem] = useState<string>("");
-  const [solution, setSolution] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isSolutionLoading, setIsSolutionLoading] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [state, dispatch] = useReducer(
+    mathSolverReducer,
+    mathSolverInitialState,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const webcamRef = useRef<Webcam>(null);
 
-  const initialState = !showCamera && !image && !solution;
+  const isInitialState =
+    !state.showCamera &&
+    !state.showExistingProblems &&
+    !state.image &&
+    !state.solution;
+
   const applyOCR = api.ocr.applyOCR.useMutation();
   const generateSolution = api.solve.solveRouter.useMutation();
   const formatSolution = api.format.formatSolution.useMutation();
@@ -42,24 +44,49 @@ export default function MathSolver() {
       const imageSrc = webcamRef.current?.getScreenshot();
 
       if (imageSrc) {
-        setImage(imageSrc);
-        setShowCamera(false);
-        setMathProblem("");
+        dispatch({ type: "SET_IMAGE", payload: imageSrc });
+        dispatch({ type: "SET_SHOW_CAMERA", payload: false });
+        dispatch({ type: "SET_MATH_PROBLEM", payload: "" });
       }
     }
   }, [webcamRef]);
 
+  const toggleCameraFacingMode = () => {
+    dispatch({
+      type: "SET_FACING_MODE",
+      payload: state.facingMode === "user" ? "environment" : "user",
+    });
+  };
+
+  const selectSampleProblem = (imageSrc: string) => {
+    dispatch({ type: "SET_IMAGE", payload: imageSrc });
+    dispatch({ type: "SET_SHOW_EXISTING_PROBLEMS", payload: false });
+    dispatch({ type: "SET_MATH_PROBLEM", payload: "" });
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setShowCamera(false);
+    dispatch({ type: "SET_SHOW_CAMERA", payload: false });
     const file = event.target.files?.[0];
 
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string);
+        dispatch({ type: "SET_IMAGE", payload: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const getMathProblem = async (image: string) => {
+    const { mathProblems } = await applyOCR.mutateAsync({ image });
+    const cleanProblem = removeDelimiters(mathProblems);
+    const mathProblemForDisplay = prepareMathProblemForRendering(cleanProblem);
+    dispatch({
+      type: "SET_MATH_PROBLEM",
+      payload: mathProblemForDisplay,
+    });
+
+    return cleanProblem;
   };
 
   const getSolution = async (mathProblems: string) => {
@@ -69,56 +96,46 @@ export default function MathSolver() {
     const { formattedSolution } = await formatSolution.mutateAsync({
       solution,
     });
-    setSolution(cleanSolution(formattedSolution));
-  };
-
-  const getMathProblem = async (image: string) => {
-    const { mathProblems } = await applyOCR.mutateAsync({ image });
-    const cleanProblem = removeDelimiters(mathProblems);
-    setMathProblem(prepareMathProblemForRendering(cleanProblem));
-    return cleanProblem;
+    dispatch({
+      type: "SET_SOLUTION",
+      payload: cleanSolution(formattedSolution),
+    });
   };
 
   const handleSubmit = async () => {
-    if (!image) return;
+    if (!state.image) return;
 
-    setIsSolutionLoading(true);
-    setError(null);
+    dispatch({ type: "SET_IS_SOLUTION_LOADING", payload: true });
+    dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const mathProblem = await getMathProblem(image);
+      const mathProblem = await getMathProblem(state.image);
       await getSolution(mathProblem);
     } catch (error) {
       console.error(error);
-      setError(
-        "Error solving math problem. Please try again by clicking `Restart`.",
-      );
+      dispatch({
+        type: "SET_ERROR",
+        payload:
+          "Error solving math problem. Please try again by clicking `Restart`.",
+      });
     } finally {
-      setIsSolutionLoading(false);
+      dispatch({ type: "SET_IS_SOLUTION_LOADING", payload: false });
     }
   };
 
   const handleRestart = () => {
-    setImage(null);
-    setSolution(null);
-    setMathProblem("");
-    setError(null);
-    setShowCamera(false);
+    dispatch({ type: "RESET_STATE" });
 
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const toggleCameraFacingMode = () => {
-    setFacingMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
-  };
-
   useEffect(() => {
-    setIsMobile(isMobileDevice());
+    dispatch({ type: "SET_IS_MOBILE", payload: isMobileDevice() });
   }, []);
 
   return (
     <div className="flex flex-col items-center p-6">
-      {initialState && (
+      {isInitialState && (
         <div className="flex flex-col items-center">
           <figure className="w-full max-w-md">
             <Image
@@ -133,13 +150,25 @@ export default function MathSolver() {
           <div className="mt-4 flex space-x-4">
             <Button
               variant="primary"
-              onClick={() => setShowCamera(true)}
+              onClick={() =>
+                dispatch({ type: "SET_SHOW_CAMERA", payload: true })
+              }
               className="w-full sm:w-auto"
             >
               Open Camera
             </Button>
 
-            {!isMobile && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                dispatch({ type: "SET_SHOW_EXISTING_PROBLEMS", payload: true })
+              }
+              className="w-full sm:w-auto"
+            >
+              Try a sample problem
+            </Button>
+
+            {!state.isMobile && (
               <FileUpload
                 fileInputRef={fileInputRef}
                 handleUpload={handleFileUpload}
@@ -149,7 +178,14 @@ export default function MathSolver() {
         </div>
       )}
 
-      {showCamera && (
+      {state.showExistingProblems && (
+        <SelectSampleProblem
+          onSelectImage={selectSampleProblem}
+          onCancel={handleRestart}
+        />
+      )}
+
+      {state.showCamera && (
         <div className="flex flex-col items-center">
           <div className="w-full max-w-md">
             <Webcam
@@ -158,7 +194,7 @@ export default function MathSolver() {
               ref={webcamRef}
               screenshotFormat="image/jpeg"
               videoConstraints={{
-                facingMode,
+                facingMode: state.facingMode,
               }}
             />
           </div>
@@ -171,20 +207,21 @@ export default function MathSolver() {
             >
               Take Picture
             </Button>
-            {isMobile && (
+            {state.isMobile && (
               <Button
                 variant="secondary"
                 onClick={toggleCameraFacingMode}
                 className="w-full sm:w-auto"
               >
-                Switch to {facingMode === "user" ? "Back" : "Front"} Camera
+                Switch to {state.facingMode === "user" ? "Back" : "Front"}{" "}
+                Camera
               </Button>
             )}
             <Button
               variant="danger"
               onClick={handleRestart}
               className="w-full sm:w-auto"
-              disabled={isSolutionLoading}
+              disabled={state.isSolutionLoading}
             >
               Restart
             </Button>
@@ -192,11 +229,11 @@ export default function MathSolver() {
         </div>
       )}
 
-      {image && (
+      {state.image && (
         <div className="mt-6 flex w-full flex-col items-center">
           <div className="w-full max-w-md">
             <Image
-              src={image}
+              src={state.image}
               alt="Captured"
               className="w-full rounded-lg shadow-xl"
               width={500}
@@ -205,11 +242,11 @@ export default function MathSolver() {
           </div>
 
           <div className="mt-4 flex flex-col space-y-5 sm:flex-row sm:space-x-6 sm:space-y-0">
-            {!solution && (
+            {!state.solution && (
               <Button
                 variant="primary"
                 className="w-full sm:w-auto"
-                disabled={isSolutionLoading}
+                disabled={state.isSolutionLoading}
                 onClick={handleSubmit}
               >
                 Solve
@@ -219,39 +256,39 @@ export default function MathSolver() {
             <Button
               variant="danger"
               className="w-full sm:w-auto"
-              disabled={isSolutionLoading}
+              disabled={state.isSolutionLoading}
               onClick={handleRestart}
             >
               Restart
             </Button>
           </div>
 
-          {mathProblem && (
+          {state.mathProblem && (
             <div className="mt-6 w-full max-w-md overflow-x-auto overflow-y-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md">
               <h3 className="mb-2 text-xl font-semibold">Math Problem:</h3>
               <ReactMarkdown
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[rehypeKatex]}
               >
-                {mathProblem}
+                {state.mathProblem}
               </ReactMarkdown>
             </div>
           )}
 
-          {solution && (
+          {state.solution && (
             <div className="mt-4 w-full max-w-4xl overflow-x-auto">
-              <Solution solution={solution} />
+              <Solution solution={state.solution} />
             </div>
           )}
         </div>
       )}
 
-      {isSolutionLoading && (
+      {state.isSolutionLoading && (
         <p className="mt-4 text-lg font-semibold text-blue-500">Loading...</p>
       )}
-      {error && (
+      {state.error && (
         <p className="mt-4 overflow-x-auto text-lg font-semibold text-red-500">
-          {error}
+          {state.error}
         </p>
       )}
     </div>

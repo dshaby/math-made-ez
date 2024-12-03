@@ -8,7 +8,7 @@ interface Props {
 const FileUpload = ({ fileInputRef, handleUpload }: Props) => {
   return (
     <Button
-      variant="secondary"
+      variant="success"
       onClick={() => fileInputRef.current?.click()}
       className="w-full sm:w-auto"
     >
