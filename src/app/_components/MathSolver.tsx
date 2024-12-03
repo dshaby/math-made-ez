@@ -6,9 +6,6 @@ import { api } from "~/trpc/react";
 import Solution from "./Solution";
 import FileUpload from "./FileUpload";
 import Button from "./Button";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import {
   cleanSolution,
   prepareMathProblemForRendering,
@@ -20,6 +17,9 @@ import {
   mathSolverInitialState,
   mathSolverReducer,
 } from "../reducers/mathSolver";
+import MathProblemDisplay from "./MathProblemDisplay";
+import { LoadingIndicator } from "./LoadingIndicator";
+import { ErrorMessage } from "./ErrorMessage";
 
 export default function MathSolver() {
   const [state, dispatch] = useReducer(
@@ -262,35 +262,18 @@ export default function MathSolver() {
               Restart
             </Button>
           </div>
-
-          {state.mathProblem && (
-            <div className="mt-6 w-full max-w-md overflow-x-auto overflow-y-hidden rounded-lg border border-gray-300 bg-white p-4 shadow-md">
-              <h3 className="mb-2 text-xl font-semibold">Math Problem:</h3>
-              <ReactMarkdown
-                remarkPlugins={[remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-              >
-                {state.mathProblem}
-              </ReactMarkdown>
-            </div>
-          )}
-
-          {state.solution && (
-            <div className="mt-4 w-full max-w-4xl overflow-x-auto">
-              <Solution solution={state.solution} />
-            </div>
-          )}
         </div>
       )}
 
-      {state.isSolutionLoading && (
-        <p className="mt-4 text-lg font-semibold text-blue-500">Loading...</p>
+      {state.mathProblem && (
+        <MathProblemDisplay mathProblem={state.mathProblem} />
       )}
-      {state.error && (
-        <p className="mt-4 overflow-x-auto text-lg font-semibold text-red-500">
-          {state.error}
-        </p>
-      )}
+
+      {state.solution && <Solution solution={state.solution} />}
+
+      {state.isSolutionLoading && <LoadingIndicator />}
+
+      {state.error && <ErrorMessage error={state.error} />}
     </div>
   );
 }
