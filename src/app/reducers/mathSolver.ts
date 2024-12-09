@@ -19,7 +19,7 @@ export const mathSolverInitialState = {
   error: null as string | null,
   isSolutionLoading: false,
   isMobile: false,
-  facingMode: "user" as "user" | "environment",
+  facingMode: "environment" as "user" | "environment",
 };
 
 export const mathSolverReducer = (
@@ -46,7 +46,7 @@ export const mathSolverReducer = (
     case "SET_FACING_MODE":
       return { ...state, facingMode: action.payload };
     case "RESET_STATE":
-      return { ...state, ...mathSolverInitialState };
+      return { ...mathSolverInitialState, isMobile: state.isMobile };
     default:
       return state;
   }

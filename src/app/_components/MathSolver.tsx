@@ -4,7 +4,6 @@ import Webcam from "react-webcam";
 import Image from "next/image";
 import { api } from "~/trpc/react";
 import Solution from "./Solution";
-import FileUpload from "./FileUpload";
 import Button from "./Button";
 import {
   cleanSolution,
@@ -20,13 +19,13 @@ import {
 import MathProblemDisplay from "./MathProblemDisplay";
 import { LoadingIndicator } from "./LoadingIndicator";
 import { ErrorMessage } from "./ErrorMessage";
+import ImageUploader from "./ImageUploader";
 
 export default function MathSolver() {
   const [state, dispatch] = useReducer(
     mathSolverReducer,
     mathSolverInitialState,
   );
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const webcamRef = useRef<Webcam>(null);
 
   const isInitialState =
@@ -64,17 +63,10 @@ export default function MathSolver() {
     dispatch({ type: "SET_MATH_PROBLEM", payload: "" });
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (imageSrc: string) => {
+    dispatch({ type: "SET_IMAGE", payload: imageSrc });
     dispatch({ type: "SET_SHOW_CAMERA", payload: false });
-    const file = event.target.files?.[0];
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        dispatch({ type: "SET_IMAGE", payload: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
+    dispatch({ type: "SET_MATH_PROBLEM", payload: "" });
   };
 
   const getMathProblem = async (image: string) => {
@@ -123,11 +115,7 @@ export default function MathSolver() {
     }
   };
 
-  const handleRestart = () => {
-    dispatch({ type: "RESET_STATE" });
-
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  const handleRestart = () => dispatch({ type: "RESET_STATE" });
 
   useEffect(() => {
     dispatch({ type: "SET_IS_MOBILE", payload: isMobileDevice() });
@@ -136,17 +124,11 @@ export default function MathSolver() {
   return (
     <div className="flex flex-col items-center p-6">
       {isInitialState && (
-        <div className="flex flex-col items-center">
-          <figure className="w-full max-w-md">
-            <Image
-              alt="image description"
-              className="h-auto w-auto max-w-full rounded-lg"
-              height={300}
-              priority
-              src="https://flowbite.com/docs/images/examples/image-3@2x.jpg"
-              width={500}
-            />
-          </figure>
+        <div className="flex w-full flex-col items-center">
+          <ImageUploader
+            onImageUpload={handleImageUpload}
+            isMobile={state.isMobile}
+          />
           <div className="mt-4 flex space-x-4">
             <Button
               variant="primary"
@@ -167,13 +149,6 @@ export default function MathSolver() {
             >
               Try a sample problem
             </Button>
-
-            {!state.isMobile && (
-              <FileUpload
-                fileInputRef={fileInputRef}
-                handleUpload={handleFileUpload}
-              />
-            )}
           </div>
         </div>
       )}
