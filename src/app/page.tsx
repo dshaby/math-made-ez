@@ -12,7 +12,7 @@ export default async function Home() {
           src="/images/background-img.jpg"
           alt="background image"
           fill
-          className="z-[-1] object-cover"
+          className="absolute inset-0 z-[-1] object-cover"
           priority
         />
         <Header />
