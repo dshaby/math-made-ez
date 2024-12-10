@@ -1,6 +1,7 @@
 "use client";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import CarouselControl from "./CarouselControl";
 
 export interface CarouselImage {
   src: string;
@@ -58,6 +59,7 @@ function Carousel({ images, onImageSelect }: Props) {
               width={500}
               height={500}
               className="cursor-pointer"
+              priority={index === 0}
             />
             <div
               className="absolute inset-0 flex cursor-pointer items-end justify-center opacity-0 transition-opacity duration-300 hover:opacity-100"
@@ -87,56 +89,8 @@ function Carousel({ images, onImageSelect }: Props) {
         ))}
       </div>
       {/* Slider controls */}
-      <button
-        type="button"
-        className="group absolute start-0 top-0 z-30 flex h-full cursor-pointer items-center justify-center px-4 focus:outline-none"
-        data-carousel-prev
-        onClick={handlePrev}
-      >
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/30 group-hover:bg-white/50 group-focus:outline-none group-focus:ring-4 group-focus:ring-white dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60 dark:group-focus:ring-gray-800/70">
-          <svg
-            className="h-4 w-4 text-white dark:text-gray-800 rtl:rotate-180"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 6 10"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 1 1 5l4 4"
-            />
-          </svg>
-          <span className="sr-only">Previous</span>
-        </span>
-      </button>
-      <button
-        type="button"
-        className="group absolute end-0 right-0 top-0 z-30 flex h-full cursor-pointer items-center justify-center px-4 focus:outline-none"
-        data-carousel-next
-        onClick={handleNext}
-      >
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/30 group-hover:bg-white/50 group-focus:outline-none group-focus:ring-4 group-focus:ring-white dark:bg-gray-800/30 dark:group-hover:bg-gray-800/60 dark:group-focus:ring-gray-800/70">
-          <svg
-            className="h-4 w-4 text-white dark:text-gray-800 rtl:rotate-180"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 6 10"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="m1 9 4-4-4-4"
-            />
-          </svg>
-          <span className="sr-only">Next</span>
-        </span>
-      </button>
+      <CarouselControl direction="prev" onClick={handlePrev} />
+      <CarouselControl direction="next" onClick={handleNext} />
     </div>
   );
 }
