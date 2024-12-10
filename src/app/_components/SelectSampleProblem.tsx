@@ -9,16 +9,24 @@ interface Props {
 
 const sampleImages: CarouselImage[] = [
   {
+    src: "/images/basic_integral.png",
+    alt: "Basic Integral Question",
+  },
+  {
+    src: "/images/derivative_trig_functions.png",
+    alt: "Derivatives of trig functions",
+  },
+  {
     src: "/images/calculus.png",
     alt: "Area of the region -- Calculus",
   },
   {
-    src: "/images/exponents.png",
-    alt: "Value of `w` -- Exponents",
+    src: "/images/simple_algebra_1.png",
+    alt: "Simple Algebra problem",
   },
   {
-    src: "/images/limit_at_infinity.png",
-    alt: "Value of f(x) as limit approaches +- Infinity",
+    src: "/images/algebra_1_text.png",
+    alt: "Simple Algebra problem",
   },
 ];
 
@@ -46,7 +54,7 @@ const SelectSampleProblem = ({ onSelectImage, onCancel }: Props) => {
   return (
     <div className="flex flex-col items-center">
       <Carousel images={sampleImages} onImageSelect={handleImageSelect} />
-      <p className="mb-4 text-lg font-medium">
+      <p className="mb-2 mt-5 text-lg font-semibold text-gray-700">
         Click on an image to select a problem
       </p>
       <div className="mt-4 flex space-x-4">
