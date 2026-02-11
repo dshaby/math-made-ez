@@ -1,13 +1,11 @@
 import Carousel, { type CarouselImage } from "./Carousel";
-import Button from "./Button";
-import { useCallback } from "react";
 
 interface Props {
   onSelectImage: (imageSrc: string) => void;
-  onCancel: () => void;
+  isLoading?: boolean;
 }
 
-const sampleImages: CarouselImage[] = [
+export const sampleImages: CarouselImage[] = [
   {
     src: "/images/basic_integral.png",
     alt: "Basic Integral Question",
@@ -30,38 +28,32 @@ const sampleImages: CarouselImage[] = [
   },
 ];
 
-const SelectSampleProblem = ({ onSelectImage, onCancel }: Props) => {
-  const handleImageSelect = useCallback(
-    async (imageSrc: string) => {
-      try {
-        const response = await fetch(imageSrc);
-        const blob = await response.blob();
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64data = reader.result as string;
-          onSelectImage(base64data);
-        };
-
-        reader.readAsDataURL(blob);
-      } catch (err) {
-        console.error("Error loading image: ", err);
-      }
-    },
-    [onSelectImage],
-  );
-
+const SelectSampleProblem = ({
+  onSelectImage,
+  isLoading = false,
+}: Props) => {
   return (
     <div className="flex flex-col items-center">
-      <Carousel images={sampleImages} onImageSelect={handleImageSelect} />
-      <p className="mb-2 mt-5 text-lg font-semibold text-gray-700">
-        Click on an image to select a problem
-      </p>
-      <div className="mt-4 flex space-x-4">
-        <Button variant="danger" onClick={onCancel}>
-          Restart
-        </Button>
+      <div className="mb-6 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+          Gallery Mode
+        </p>
+        <h3 className="mt-2 font-serif text-3xl font-semibold text-stone-900">
+          Pick a sample problem
+        </h3>
+        <p className="mt-2 text-sm text-stone-600">
+          Great for demos. One click selects and loads a ready-to-solve example.
+        </p>
       </div>
+      <Carousel images={sampleImages} onImageSelect={onSelectImage} />
+      <p className="mb-2 mt-5 text-base font-medium text-stone-600">
+        Click any slide to switch the current demo problem
+      </p>
+      {isLoading && (
+        <p className="mt-2 text-sm font-semibold text-teal-800">
+          Loading sample...
+        </p>
+      )}
     </div>
   );
 };

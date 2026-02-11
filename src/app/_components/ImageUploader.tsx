@@ -53,9 +53,11 @@ const ImageUploader = ({ onImageUpload, isMobile }: Props) => {
 
   return (
     <div
-      className={`flex min-h-64 w-full max-w-xl flex-col items-center justify-center border-2 border-dashed ${
-        dragActive ? "border-blue-500" : "border-gray-300"
-      } rounded-md bg-white p-6`}
+      className={`flex min-h-72 w-full max-w-3xl flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all ${
+        dragActive
+          ? "border-teal-700 bg-teal-50/70"
+          : "border-stone-400/60 bg-white/60"
+      }`}
       onDragOver={!isMobile ? handleDragOver : undefined}
       onDragLeave={!isMobile ? handleDragLeave : undefined}
       onDrop={!isMobile ? handleDrop : undefined}
@@ -68,7 +70,10 @@ const ImageUploader = ({ onImageUpload, isMobile }: Props) => {
         id="file-upload"
         className="hidden"
       />
-      <label htmlFor="file-upload" className="cursor-pointer">
+      <label
+        htmlFor="file-upload"
+        className="cursor-pointer rounded-full border border-stone-300/70 bg-white p-3 shadow-lg shadow-stone-900/5"
+      >
         <Image
           src="/assets/upload-photo.svg"
           alt="Upload Icon"
@@ -76,13 +81,13 @@ const ImageUploader = ({ onImageUpload, isMobile }: Props) => {
           height={112}
         />
       </label>
-      <p className="text-center text-gray-700">
+      <p className="mt-4 text-center text-base text-stone-700">
         {isMobile ? (
           <>
             Tap to{" "}
             <label
               htmlFor="file-upload"
-              className="cursor-pointer text-blue-500 underline"
+              className="cursor-pointer font-semibold text-teal-800 underline decoration-2"
             >
               upload an image
             </label>
@@ -92,7 +97,7 @@ const ImageUploader = ({ onImageUpload, isMobile }: Props) => {
             Drag & drop an image here, or{" "}
             <label
               htmlFor="file-upload"
-              className="cursor-pointer text-blue-500 underline"
+              className="cursor-pointer font-semibold text-teal-800 underline decoration-2"
             >
               browse
             </label>
@@ -100,7 +105,7 @@ const ImageUploader = ({ onImageUpload, isMobile }: Props) => {
         )}
       </p>
       {!isMobile && (
-        <p className="mt-2 text-sm text-gray-500">Or press Ctrl + V to paste</p>
+        <p className="mt-2 text-sm text-stone-500">Or press Ctrl + V to paste</p>
       )}
     </div>
   );

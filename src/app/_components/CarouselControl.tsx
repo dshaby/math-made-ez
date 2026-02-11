@@ -9,12 +9,12 @@ const CarouselControl = ({ direction, onClick }: Props) => {
   return (
     <button
       type="button"
-      className={`group absolute top-0 z-30 flex h-full cursor-pointer items-center justify-center px-4 focus:outline-none ${
+      className={`group absolute top-0 z-30 flex h-full cursor-pointer items-center justify-center px-3 focus:outline-none ${
         isPrev ? "left-0" : "right-0"
       }`}
       onClick={onClick}
     >
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-700/50 group-hover:bg-gray-700/70 group-focus:ring-4 group-focus:ring-gray-700">
+      <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/35 bg-black/35 backdrop-blur-sm transition-colors group-hover:bg-black/50 group-focus:ring-2 group-focus:ring-white/60">
         <svg
           className={`h-4 w-4 text-white ${isPrev ? "" : "rotate-180"}`}
           aria-hidden="true"

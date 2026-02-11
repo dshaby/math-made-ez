@@ -1,3 +1,84 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --page-bg: #f2efe7;
+  --ink: #1f1e1a;
+  --muted-ink: #52514a;
+  --panel: rgba(255, 255, 255, 0.78);
+  --panel-strong: rgba(255, 255, 255, 0.92);
+  --line: rgba(31, 30, 26, 0.12);
+  --brand: #0f766e;
+  --brand-strong: #115e59;
+  --accent: #c2410c;
+  --danger: #b42318;
+  --success: #166534;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(15, 118, 110, 0.2), transparent 35%),
+    radial-gradient(circle at 84% 22%, rgba(194, 65, 12, 0.18), transparent 38%),
+    radial-gradient(circle at 38% 82%, rgba(120, 53, 15, 0.14), transparent 44%),
+    var(--page-bg);
+  color: var(--ink);
+}
+
+#how-it-works,
+#tech-stack {
+  scroll-margin-top: 2.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.grain {
+  position: relative;
+}
+
+.grain::before {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.06) 0.6px, transparent 0.6px);
+  background-size: 2px 2px;
+  opacity: 0.28;
+}
+
+.glass-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 14px 36px rgba(18, 17, 14, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+}
+
+.section-reveal {
+  animation: rise-in 360ms ease-out both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
